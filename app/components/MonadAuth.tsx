@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePrivy, CrossAppAccountWithMetadata } from "@privy-io/react-auth";
 import { LogOut, Wallet } from "lucide-react";
 import Link from "next/link";
+import { useFetchUsername } from "../hooks/useFetchUserName";
 
 interface MonadAuthProps {
   onAccountAddress?: (address: string | null) => void;
@@ -21,34 +22,11 @@ interface UserData {
 export default function MonadAuth({ onAccountAddress }: MonadAuthProps) {
   const { authenticated, user, ready, logout } = usePrivy();
   const [accountAddress, setAccountAddress] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  const [loadingUsername, setLoadingUsername] = useState<boolean>(false);
+
   const [message, setMessage] = useState<string>("");
 
-  const fetchUsername = async (walletAddress: string) => {
-    setLoadingUsername(true);
-    try {
-      const response = await fetch(
-        `https://monad-games-id-site.vercel.app/api/check-wallet?wallet=${walletAddress}`
-      );
-
-      if (response.ok) {
-        const data: UserData = await response.json();
-        if (data.hasUsername && data.user?.username) {
-          setUsername(data.user.username);
-        } else {
-          setUsername(null);
-        }
-      } else {
-        setUsername(null);
-      }
-    } catch (error) {
-      console.error("Error fetching username:", error);
-      setUsername(null);
-    } finally {
-      setLoadingUsername(false);
-    }
-  };
+  const { loadingUsername, username, setUsername, refetch } =
+    useFetchUsername(accountAddress);
 
   useEffect(() => {
     // Check if privy is ready and user is authenticated
@@ -69,7 +47,6 @@ export default function MonadAuth({ onAccountAddress }: MonadAuthProps) {
             const address = crossAppAccount.embeddedWallets[0].address;
             setAccountAddress(address);
             setMessage("");
-            fetchUsername(address);
             if (onAccountAddress) {
               onAccountAddress(address);
             }
@@ -132,29 +109,44 @@ export default function MonadAuth({ onAccountAddress }: MonadAuthProps) {
                   Loading username...
                 </p>
               ) : username ? (
-                <div className="space-y-1">
-                  <p className="text-base sm:text-lg font-semibold truncate">
-                    @{username}
-                  </p>
-                  <div className="flex items-center gap-1 sm:gap-2">
-                    <Wallet
-                      size={14}
-                      className="text-emerald-400 sm:w-4 sm:h-4"
-                    />
-                    <span className="text-xs sm:text-sm font-mono">
-                      {formatAddress(accountAddress)}{" "}
-                    </span>
-                    <Link href="/leaderboard">Leaderboard</Link>
+                <>
+                  <div className="space-y-1">
+                    <p className="text-base sm:text-lg font-semibold truncate">
+                      @{username}
+                    </p>
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <Wallet
+                        size={14}
+                        className="text-emerald-400 sm:w-4 sm:h-4"
+                      />
+                      <span className="text-xs sm:text-sm font-mono">
+                        {formatAddress(accountAddress)}{" "}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                  <Link
+                    href="/leaderboard"
+                    target="_blank"
+                    referrerPolicy="no-referrer"
+                    className="text-blue-300"
+                  >
+                    Leaderboard
+                  </Link>
+                </>
               ) : (
-                <div className="flex items-center gap-1 sm:gap-2 text-slate-300">
+                <div className="flex flex-col items-center gap-1 sm:gap-2 text-slate-300">
                   <p>No username found</p>
+                  <button
+                    onClick={refetch}
+                    className="cursor-pointer text-sm text-blue-400"
+                  >
+                    {loadingUsername ? "Loading..." : "Refresh"}
+                  </button>
                 </div>
               )}
               <button
                 onClick={logout}
-                className="flex items-center gap-1 sm:gap-2 w-full bg-red-600/80 hover:bg-red-600 border border-red-500 rounded-md px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium transition-colors duration-200 cursor-pointer"
+                className="flex items-center gap-1 sm:gap-2 w-full bg-red-600/80 hover:bg-red-600 border border-red-500 rounded-md px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium transition-colors duration-200 cursor-pointer mt-2"
               >
                 <LogOut size={12} className="sm:w-3.5 sm:h-3.5" /> Logout
               </button>

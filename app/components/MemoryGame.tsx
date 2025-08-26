@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Clock, Trophy, RotateCcw, Play } from "lucide-react";
 import { CrossAppAccountWithMetadata, usePrivy } from "@privy-io/react-auth";
+import { useFetchUsername } from "../hooks/useFetchUserName";
 
 interface Card {
   id: number;
@@ -40,6 +41,8 @@ export default function MemoryGame() {
         account.type === "cross_app" &&
         account.providerApp.id === "cmd8euall0037le0my79qpz42"
     )?.embeddedWallets[0].address;
+
+  const { username, refetch } = useFetchUsername(walletAddress);
 
   // Game configuration - Mobile optimized
   const levelConfig: Record<number, LevelConfig> = {
@@ -115,12 +118,22 @@ export default function MemoryGame() {
   }, []);
 
   // Start game
-  const startGame = (): void => {
+  const startGame = () => {
+    if (!username) {
+      alert("Create username to play.");
+      return;
+    }
+
     setGameState("playing");
     setScore(0);
     setLevel(1); // Reset to level 1 when starting
     initializeGame(1);
   };
+
+  useEffect(() => {
+    if (!walletAddress) return;
+    refetch();
+  }, [username]);
 
   // Timer effect
   useEffect(() => {
@@ -314,7 +327,7 @@ export default function MemoryGame() {
             className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold text-base sm:text-lg transition-all duration-300 transform hover:scale-105 flex items-center gap-2 mx-auto shadow-lg cursor-pointer "
           >
             <Play size={18} className="sm:w-5 sm:h-5" />
-            Start Game
+            {!username ? "Please create a username to play" : "Start Game"}
           </button>
         </div>
       </div>
