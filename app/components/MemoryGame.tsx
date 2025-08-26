@@ -121,6 +121,7 @@ export default function MemoryGame() {
   const startGame = () => {
     if (!username) {
       alert("Create username to play.");
+      window.open("https://monad-games-id-site.vercel.app", "_blank");
       return;
     }
 
