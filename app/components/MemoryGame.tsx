@@ -78,7 +78,7 @@ export default function MemoryGame() {
       "/cards/port.png",
       "/cards/ravel.jpg",
       "/cards/sabo.jpg",
-      "/cards/santj.jpg",
+      "/cards/santi.jpg",
       "/cards/tunes.jpg",
       "/cards/uday.jpg",
       "/cards/velikan.jpg",
