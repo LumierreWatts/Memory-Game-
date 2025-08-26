@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Clock, Trophy, RotateCcw, Play } from "lucide-react";
-import Link from "next/link";
+import { CrossAppAccountWithMetadata, usePrivy } from "@privy-io/react-auth";
 
 interface Card {
   id: number;
@@ -29,7 +29,17 @@ export default function MemoryGame() {
   const [matchedCards, setMatchedCards] = useState<number[]>([]);
   const [isChecking, setIsChecking] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<{ transactionHash: string }>();
+  const [error, setError] = useState<string | null>(null);
+  const { user } = usePrivy();
+
+  const walletAddress =
+    user &&
+    user.linkedAccounts.find(
+      (account): account is CrossAppAccountWithMetadata =>
+        account.type === "cross_app" &&
+        account.providerApp.id === "cmd8euall0037le0my79qpz42"
+    )?.embeddedWallets[0].address;
 
   // Game configuration - Mobile optimized
   const levelConfig: Record<number, LevelConfig> = {
@@ -205,6 +215,7 @@ export default function MemoryGame() {
     setLevel(1);
     setScore(0);
     setGameState("menu");
+    setError(null);
   };
 
   // Format time
@@ -234,6 +245,7 @@ export default function MemoryGame() {
 
   async function handleSubmitScore() {
     setIsSubmitting(true);
+    setError(null); // reset error before submitting
 
     try {
       const res = await fetch("/api/submit-score", {
@@ -242,21 +254,24 @@ export default function MemoryGame() {
           "Content-type": "application/json",
         },
         body: JSON.stringify({
-          player: "walletAddress",
+          player: walletAddress,
           scoreAmount: score,
           transactionAmount: 1,
         }),
       });
 
+      const json = await res.json();
+
       if (!res.ok) {
-        throw new Error(res.statusText);
+        // API returned an error
+        setError(json.error || "Failed to submit score");
+        return;
       }
 
-      const data = await res.json();
-
-      setData(data);
-    } catch (error) {
-      console.error("Error submitting score", error);
+      setData(json);
+    } catch (err) {
+      console.error("Error submitting score", err);
+      setError("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -341,6 +356,17 @@ export default function MemoryGame() {
                 {isSubmitting ? "Submitting..." : "Submit Score"}
               </button>
             </div>
+
+            {data && (
+              <div className="mt-4 bg-gray-700 rounded-lg p-3 sm:p-4 text-left">
+                <p className="text-sm text-gray-300">Transaction Successful!</p>
+                <p className="text-xs text-cyan-400 break-words">
+                  Hash: {data.transactionHash}
+                </p>
+              </div>
+            )}
+
+            {error && <p className="text-sm text-red-400 mt-2">{error}</p>}
 
             <button
               onClick={resetGame}
