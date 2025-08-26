@@ -132,8 +132,9 @@ export default function MemoryGame() {
   };
 
   useEffect(() => {
-    if (!walletAddress) return;
-    refetch();
+    if (username) {
+      refetch();
+    }
   }, [username]);
 
   // Timer effect
