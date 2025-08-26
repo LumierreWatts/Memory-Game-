@@ -47,7 +47,7 @@ export default function MemoryGame() {
     2: { rows: 4, cols: 4, time: 210 }, // 4x4
     3: { rows: 4, cols: 5, time: 240 }, // 4x5
     4: { rows: 5, cols: 6, time: 300 }, // 5x6
-    5: { rows: 6, cols: 6, time: 420 }, // 8x8
+    5: { rows: 8, cols: 8, time: 420 }, // 8x8
   };
 
   // Generate card images

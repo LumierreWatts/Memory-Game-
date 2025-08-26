@@ -48,8 +48,6 @@ export default function Leaderboard() {
     fetchLeaderboard();
   }, [page]);
 
-  console.log(leaderboard);
-
   return (
     <div
       style={{
@@ -143,11 +141,6 @@ export default function Leaderboard() {
                   </td>
                 </tr>
               ))
-            )}
-            {!leaderboard.length && (
-              <div className="p-2 w-full text-slate-200 text-sm">
-                <p>No Leaderboard data...</p>
-              </div>
             )}
           </tbody>
         </table>

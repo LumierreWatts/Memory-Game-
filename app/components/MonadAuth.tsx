@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePrivy, CrossAppAccountWithMetadata } from "@privy-io/react-auth";
 import { LogOut, Wallet } from "lucide-react";
+import Link from "next/link";
 
 interface MonadAuthProps {
   onAccountAddress?: (address: string | null) => void;
@@ -142,7 +143,8 @@ export default function MonadAuth({ onAccountAddress }: MonadAuthProps) {
                     />
                     <span className="text-xs sm:text-sm font-mono">
                       {formatAddress(accountAddress)}{" "}
-                    </span>{" "}
+                    </span>
+                    <Link href="/leaderboard">Leaderboard</Link>
                   </div>
                 </div>
               ) : (
