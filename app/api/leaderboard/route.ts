@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
   try {
     const res = await axios.get(
-      `https://monad-games-id-site.vercel.app/api/leaderboard?page=${page}&gameId=92&sortBy=scores`
+      `https://monad-games-id-site.vercel.app/api/leaderboard?page=${page}&gameId=204&sortBy=scores`
     );
 
     if (!res.data) {
